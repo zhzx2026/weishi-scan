@@ -132,29 +132,35 @@ jobs:
       - name: 合并去重
         run: |
           mkdir -p out
-          # 表头 + 去重(按 course_id)
           echo 'course_id,name,course_mode,live_status,class_id,classroom_name,publish_status,have_permission,price,start_time,learn_cnt,cover_url,is_target' > out/all_courses.csv
           cat all/*.csv 2>/dev/null | python3 -c "
-import sys, csv
-seen=set()
-w=csv.writer(sys.stdout, lineterminator='\n')
-for line in sys.stdin:
-    try:
-        row=next(csv.reader([line]))
-    except Exception:
-        continue
-    if len(row) < 13:
-        continue
-    cid=row[0]
-    if cid in seen:
-        continue
-    seen.add(cid)
-    w.writerow(row)
-" >> out/all_courses.csv
-          total=$(($(wc -l < out/all_courses.csv) - 1))
-          teacher=$(awk -F, 'NR>1 && $5==${{ inputs.target }}' out/all_courses.csv | wc -l | tr -d ' ')
-          echo "总计 $total 条课程, 其中 classId=${{ inputs.target }} 有 $teacher 条"
-          echo "$total $teacher" > out/summary.txt
+          import sys, csv
+          seen = set()
+          w = csv.writer(sys.stdout, lineterminator='\n')
+          for line in sys.stdin:
+              try:
+                  row = next(csv.reader([line]))
+              except Exception:
+                  continue
+              if len(row) < 13:
+                  continue
+              cid = row[0]
+              if cid in seen:
+                  continue
+              seen.add(cid)
+              w.writerow(row)
+          " >> out/all_courses.csv
+          python3 - out/all_courses.csv "${{ inputs.target }}" <<'PYEOF'
+          import csv, sys
+          total = 0
+          teacher = 0
+          for row in csv.DictReader(open(sys.argv[1], encoding="utf-8")):
+              total += 1
+              if row["class_id"] == sys.argv[2]:
+                  teacher += 1
+          print(f"总计 {total} 条课程, 其中 classId={sys.argv[2]} 有 {teacher} 条")
+          open("out/summary.txt", "w").write(f"{total} {teacher}\n")
+PYEOF
 
       - name: 上传汇总 CSV
         uses: actions/upload-artifact@v4
