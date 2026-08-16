@@ -69,6 +69,7 @@ jobs:
           WEISHI_UA: ${{ secrets.WEISHI_UA }}
         run: |
           chmod +x scan.sh worker.sh
+          echo "DEBUG action=${{ inputs.action }} group=${{ inputs.group }} groups=${{ inputs.groups }} threads=${{ inputs.threads }} target=${{ inputs.target }}"
           CHUNK=${{ matrix.chunk }}
           GROUP=${{ inputs.group }}
           GROUPS=${{ inputs.groups }}
