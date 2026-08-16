@@ -73,21 +73,21 @@ jobs:
           echo "DBG slice0=$(python3 slice.py ${{ inputs.lesson_start }} ${{ inputs.lesson_end }} ${{ inputs.group }} ${{ inputs.groups }} 10 0)"
           CHUNK=${{ matrix.chunk }}
           GROUP=${{ inputs.group }}
-          GROUPS=${{ inputs.groups }}
+          NGROUPS=${{ inputs.groups }}
           TARGET=${{ inputs.target }}
           THREADS=${{ inputs.threads }}
           NJOBS=10
-          echo "DBG2 GROUP=[$GROUP] GROUPS=[$GROUPS] NJOBS=[$NJOBS] CHUNK=[$CHUNK]"
+          echo "DBG2 GROUP=[$GROUP] NGROUPS=[$NGROUPS] NJOBS=[$NJOBS] CHUNK=[$CHUNK]"
 
           if [ "${{ inputs.scan_lesson }}" = "true" ]; then
-            SLICE="$(python3 slice.py ${{ inputs.lesson_start }} ${{ inputs.lesson_end }} "$GROUP" "$GROUPS" "$NJOBS" "$CHUNK")"
+            SLICE="$(python3 slice.py ${{ inputs.lesson_start }} ${{ inputs.lesson_end }} "$GROUP" "$NGROUPS" "$NJOBS" "$CHUNK")"
             echo "[单课] group $GROUP 块$CHUNK 区间 $SLICE"
             ./scan.sh 1 $SLICE "$TARGET" "$THREADS" > "g${GROUP}_m1_c${CHUNK}.csv" 2>/dev/null || true
             echo "[单课] 记录 $(wc -l < "g${GROUP}_m1_c${CHUNK}.csv") 条"
           fi
 
           if [ "${{ inputs.scan_series }}" = "true" ]; then
-            SLICE="$(python3 slice.py ${{ inputs.series_start }} ${{ inputs.series_end }} "$GROUP" "$GROUPS" "$NJOBS" "$CHUNK")"
+            SLICE="$(python3 slice.py ${{ inputs.series_start }} ${{ inputs.series_end }} "$GROUP" "$NGROUPS" "$NJOBS" "$CHUNK")"
             echo "[系列] group $GROUP 块$CHUNK 区间 $SLICE"
             ./scan.sh 2 $SLICE "$TARGET" "$THREADS" > "g${GROUP}_m2_c${CHUNK}.csv" 2>/dev/null || true
             echo "[系列] 记录 $(wc -l < "g${GROUP}_m2_c${CHUNK}.csv") 条"
