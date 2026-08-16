@@ -3,7 +3,7 @@
 # 并发线程数 $5（默认 30）
 # 用法: scan.sh <mode> <start> <end> <targetClassId> [threads]
 # Cookie 从环境变量 WEISHI_COOKIE / WEISHI_UA 读取（GitHub Actions 用 secrets 注入）；
-# 若未设置则用下面的本地默认值。
+# 未设置时直接报错，禁止把会话 Cookie 硬编码进脚本。
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
@@ -11,7 +11,8 @@ trap 'rm -rf "$WORK"' EXIT
 if [ -n "${WEISHI_COOKIE:-}" ]; then
     COOKIE="$WEISHI_COOKIE"
 else
-    COOKIE='GID=e235d7c00aba87824808e9fc3bc5d6d6; weishi_login_target="https://m.weishi100.com/cweb/#/student"; _const_weishi_id_="9deceea7-bddc-45bf-ba26-d6ea804dc480::703BECE7963F4EB60DFDF01DC96A95D5"; Hm_lvt_4fe36727dba7aabcdd581120c42af358=1786059816,1786067047,1786147845,1786153870'
+    echo "[FATAL] 未设置 WEISHI_COOKIE 环境变量，拒绝使用内置 Cookie" >&2
+    exit 1
 fi
 if [ -n "${WEISHI_UA:-}" ]; then
     UA="$WEISHI_UA"
