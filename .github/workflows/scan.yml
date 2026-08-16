@@ -1,0 +1,135 @@
+name: weishi-scan
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: '目标 classId'
+        required: true
+        default: '59253'
+      chunks:
+        description: '并行分片数 (1-32)，每片固定一个 job'
+        required: true
+        default: '20'
+      threads:
+        description: '每个 job 的并发线程数'
+        required: true
+        default: '15'
+      # ---------- 单课 courseMode=1 ----------
+      scan_lesson:
+        description: '是否扫描单节课 (true/false)'
+        required: true
+        default: 'true'
+      lesson_start:
+        description: '单课起始 courseId'
+        required: true
+        default: '9000000'
+      lesson_end:
+        description: '单课结束 courseId (含)'
+        required: true
+        default: '9300000'
+      # ---------- 系列课 courseMode=2 ----------
+      scan_series:
+        description: '是否扫描系列课 (true/false)'
+        required: true
+        default: 'true'
+      series_start:
+        description: '系列起始 courseId'
+        required: true
+        default: '1300000'
+      series_end:
+        description: '系列结束 courseId (含)'
+        required: true
+        default: '1500000'
+
+jobs:
+  scan:
+    name: "块 ${{ matrix.chunk }} (单课+系列)"
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        chunk: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 跳过超出分片数的 job
+        run: |
+          if [ "${{ matrix.chunk }}" -ge "${{ inputs.chunks }}" ]; then
+            echo "chunk ${{ matrix.chunk }} >= 配置分片数 ${{ inputs.chunks }}，跳过"
+            exit 0
+          fi
+
+      - name: 扫描本块（单课 + 系列，区间不重叠）
+        env:
+          WEISHI_COOKIE: ${{ secrets.WEISHI_COOKIE }}
+          WEISHI_UA: ${{ secrets.WEISHI_UA }}
+        run: |
+          chmod +x scan.sh worker.sh
+          CHUNK=${{ matrix.chunk }}
+          CHUNKS=${{ inputs.chunks }}
+          TARGET=${{ inputs.target }}
+          THREADS=${{ inputs.threads }}
+
+          # 计算一个分片内的子区间
+          slice() { # $1=start $2=end 输出 LO HI
+            local START=$1 END=$2
+            local SPAN=$(( END - START + 1 ))
+            local PER=$(( (SPAN + CHUNKS - 1) / CHUNKS ))
+            local LO=$(( START + CHUNK * PER ))
+            local HI=$(( LO + PER - 1 ))
+            [ $HI -gt $END ] && HI=$END
+            echo "$LO $HI"
+          }
+
+          if [ "${{ inputs.scan_lesson }}" = "true" ]; then
+            read LO HI <<< "$(slice ${{ inputs.lesson_start }} ${{ inputs.lesson_end }})"
+            echo "[单课] 本块 $LO ~ $HI"
+            ./scan.sh 1 "$LO" "$HI" "$TARGET" "$THREADS" > "result_1_${CHUNK}.txt" 2>/dev/null || true
+            echo "[单课] 命中 $(wc -l < "result_1_${CHUNK}.txt") 条"
+          fi
+
+          if [ "${{ inputs.scan_series }}" = "true" ]; then
+            read LO HI <<< "$(slice ${{ inputs.series_start }} ${{ inputs.series_end }})"
+            echo "[系列] 本块 $LO ~ $HI"
+            ./scan.sh 2 "$LO" "$HI" "$TARGET" "$THREADS" > "result_2_${CHUNK}.txt" 2>/dev/null || true
+            echo "[系列] 命中 $(wc -l < "result_2_${CHUNK}.txt") 条"
+          fi
+
+      - name: 打印本块命中
+        run: |
+          cat result_*_${{ matrix.chunk }}.txt 2>/dev/null || true
+
+      - name: 上传分片结果
+        uses: actions/upload-artifact@v4
+        with:
+          name: scan-chunk-${{ matrix.chunk }}
+          path: result_*_${{ matrix.chunk }}.txt
+          if-no-files-found: warn
+
+  merge:
+    name: 汇总结果
+    needs: scan
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: 下载所有分片
+        uses: actions/download-artifact@v4
+        with:
+          path: all_results
+          pattern: scan-chunk-*
+          merge-multiple: true
+
+      - name: 合并去重并按 ID 排序
+        run: |
+          mkdir -p final
+          cat all_results/*.txt 2>/dev/null | sort -t' ' -k1 -n -u > final/全部命中.txt
+          echo "=== 共命中 $(wc -l < final/全部命中.txt) 条（classId=${{ inputs.target }}）==="
+          cat final/全部命中.txt
+
+      - name: 上传汇总
+        uses: actions/upload-artifact@v4
+        with:
+          name: scan-merged
+          path: final/
