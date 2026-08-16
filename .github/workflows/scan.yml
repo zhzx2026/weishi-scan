@@ -69,15 +69,12 @@ jobs:
           WEISHI_UA: ${{ secrets.WEISHI_UA }}
         run: |
           chmod +x scan.sh worker.sh
-          echo "DBG group=${{ inputs.group }} groups=${{ inputs.groups }} lesson=${{ inputs.lesson_start }}-${{ inputs.lesson_end }}"
-          echo "DBG slice0=$(python3 slice.py ${{ inputs.lesson_start }} ${{ inputs.lesson_end }} ${{ inputs.group }} ${{ inputs.groups }} 10 0)"
           CHUNK=${{ matrix.chunk }}
           GROUP=${{ inputs.group }}
           NGROUPS=${{ inputs.groups }}
           TARGET=${{ inputs.target }}
           THREADS=${{ inputs.threads }}
           NJOBS=10
-          echo "DBG2 GROUP=[$GROUP] NGROUPS=[$NGROUPS] NJOBS=[$NJOBS] CHUNK=[$CHUNK]"
 
           if [ "${{ inputs.scan_lesson }}" = "true" ]; then
             SLICE="$(python3 slice.py ${{ inputs.lesson_start }} ${{ inputs.lesson_end }} "$GROUP" "$NGROUPS" "$NJOBS" "$CHUNK")"
