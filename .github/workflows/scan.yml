@@ -69,7 +69,6 @@ jobs:
           WEISHI_UA: ${{ secrets.WEISHI_UA }}
         run: |
           chmod +x scan.sh worker.sh
-          echo "DEBUG action=${{ inputs.action }} group=${{ inputs.group }} groups=${{ inputs.groups }} threads=${{ inputs.threads }} target=${{ inputs.target }}"
           CHUNK=${{ matrix.chunk }}
           GROUP=${{ inputs.group }}
           GROUPS=${{ inputs.groups }}
@@ -77,38 +76,18 @@ jobs:
           THREADS=${{ inputs.threads }}
           NJOBS=10
 
-          # 先按组把全区间切成组区间, 再在组内切 10 块
-          group_slice() { # start end -> 该组的 [LO,HI]
-            local START=$1 END=$2
-            local SPAN=$(( END - START + 1 ))
-            local PER=$(( (SPAN + GROUPS - 1) / GROUPS ))
-            local LO=$(( START + GROUP * PER ))
-            local HI=$(( LO + PER - 1 ))
-            [ $HI -gt $END ] && HI=$END
-            echo "$LO $HI"
-          }
-          chunk_slice() { # groupLO groupHI -> 本 job 的 [LO,HI]
-            local LO=$1 HI=$2
-            local SPAN=$(( HI - LO + 1 ))
-            local PER=$(( (SPAN + NJOBS - 1) / NJOBS ))
-            local LO2=$(( LO + CHUNK * PER ))
-            local HI2=$(( LO2 + PER - 1 ))
-            [ $HI2 -gt $HI ] && HI2=$HI
-            echo "$LO2 $HI2"
-          }
-
           if [ "${{ inputs.scan_lesson }}" = "true" ]; then
-            read GLO GHI <<< "$(group_slice ${{ inputs.lesson_start }} ${{ inputs.lesson_end }})"
-            read LO HI <<< "$(chunk_slice $GLO $GHI)"
+            read LO HI <<< "$(python3 slice.py ${{ inputs.lesson_start }} ${{ inputs.lesson_end }} "$GROUP" "$GROUPS" "$NJOBS" "$CHUNK")"
+            echo "[单课] group $GROUP 块$CHUNK $LO~$HI"
             ./scan.sh 1 "$LO" "$HI" "$TARGET" "$THREADS" > "g${GROUP}_m1_c${CHUNK}.csv" 2>/dev/null || true
-            echo "[单课] group $GROUP 块$CHUNK $LO~$HI 记录 $(wc -l < "g${GROUP}_m1_c${CHUNK}.csv") 条"
+            echo "[单课] 记录 $(wc -l < "g${GROUP}_m1_c${CHUNK}.csv") 条"
           fi
 
           if [ "${{ inputs.scan_series }}" = "true" ]; then
-            read GLO GHI <<< "$(group_slice ${{ inputs.series_start }} ${{ inputs.series_end }})"
-            read LO HI <<< "$(chunk_slice $GLO $GHI)"
+            read LO HI <<< "$(python3 slice.py ${{ inputs.series_start }} ${{ inputs.series_end }} "$GROUP" "$GROUPS" "$NJOBS" "$CHUNK")"
+            echo "[系列] group $GROUP 块$CHUNK $LO~$HI"
             ./scan.sh 2 "$LO" "$HI" "$TARGET" "$THREADS" > "g${GROUP}_m2_c${CHUNK}.csv" 2>/dev/null || true
-            echo "[系列] group $GROUP 块$CHUNK $LO~$HI 记录 $(wc -l < "g${GROUP}_m2_c${CHUNK}.csv") 条"
+            echo "[系列] 记录 $(wc -l < "g${GROUP}_m2_c${CHUNK}.csv") 条"
           fi
 
       - name: 上传本块结果
