@@ -1,0 +1,44 @@
+name: daily-scan
+
+on:
+  schedule:
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 扫描新课
+        env:
+          WEISHI_COOKIE: ${{ secrets.WEISHI_COOKIE }}
+          WEISHI_UA: ${{ secrets.WEISHI_UA }}
+          TARGET_CLASS: ${{ vars.TARGET_CLASS }}
+        run: python3 daily_scan.py
+
+      - name: 邮件汇报老师新课
+        if: hashFiles('new_teacher.json') != ''
+        env:
+          MAIL_API_KEY: ${{ secrets.MAIL_API_KEY }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+        run: python3 send_report.py
+
+      - name: 汇报扫描失败
+        if: failure()
+        env:
+          MAIL_API_KEY: ${{ secrets.MAIL_API_KEY }}
+          MAIL_TO: ${{ secrets.MAIL_TO }}
+        run: |
+          curl -s -X POST https://mail.sunsetzhong.indevs.in/api/v1/send \
+            -H "Authorization: Bearer $MAIL_API_KEY" -H "Content-Type: application/json" \
+            -d "{\"to\":\"$MAIL_TO\",\"subject\":\"[微师] 每日扫描失败\",\"html\":\"<b>每日扫描失败</b><br>请检查 WEISHI_COOKIE 是否过期或仓库 Actions 日志\"}"
+
+      - name: 回写基线
+        run: |
+          git config user.name "zhzx2026"
+          git config user.email "zhzx2026@users.noreply.github.com"
+          git add data/baseline.json
+          git diff --cached --quiet || git commit -m "update baseline"
+          git push
