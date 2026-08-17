@@ -21,9 +21,11 @@ def fetch(course_id):
     req = urllib.request.Request(url, headers={"Cookie": COOKIE, "User-Agent": UA})
     try:
         with urllib.request.urlopen(req, timeout=15) as r:
-            return course_id, r.read().decode("utf-8", "replace")
+            return course_id, r.status, r.read().decode("utf-8", "replace")
+    except urllib.error.HTTPError as e:
+        return course_id, e.code, ""
     except Exception:
-        return course_id, ""
+        return course_id, 0, ""
 
 
 def main():
@@ -33,35 +35,40 @@ def main():
             if len(row) > 2 and row[0].isdigit() and row[2] == "1":
                 ids.append(row[0])
     print(f"老师单课数: {len(ids)}")
+    from collections import Counter
+    statuses = Counter()
     rows, sample = [], None
     with ThreadPoolExecutor(max_workers=20) as ex:
-        for cid, body in ex.map(fetch, ids):
+        for cid, status, body in ex.map(fetch, ids):
+            statuses[status] += 1
             try:
                 d = json.loads(body)
             except Exception:
-                continue
-            if d.get("code") != 200:
-                continue
-            data = d.get("data") or {}
-            c = data.get("course") or {}
-            cr = data.get("classroom") or {}
-            s = c.get("seriesCourse") or data.get("seriesCourse") or {}
-            if sample is None:
-                sample = json.dumps({"courseKeys": list(c.keys()), "series": s, "classroom": cr},
-                                    ensure_ascii=False)[:800]
-            rows.append([
-                str(c.get("id") or cid),
-                c.get("name", ""),
-                s.get("id", ""),
-                s.get("name", ""),
-                cr.get("classId", ""),
-                cr.get("name", ""),
-                c.get("price") or "",
-                c.get("startTime") or "",
-                c.get("learnCount") or "",
-            ])
+                d = None
+            if d and d.get("code") == 200:
+                data = d.get("data") or {}
+                c = data.get("course") or {}
+                cr = data.get("classroom") or {}
+                s = c.get("seriesCourse") or data.get("seriesCourse") or {}
+                if sample is None:
+                    sample = json.dumps({"courseKeys": list(c.keys()), "series": s, "classroom": cr},
+                                        ensure_ascii=False)[:800]
+                rows.append([
+                    str(c.get("id") or cid),
+                    c.get("name", ""),
+                    s.get("id", ""),
+                    s.get("name", ""),
+                    cr.get("classId", ""),
+                    cr.get("name", ""),
+                    c.get("price") or "",
+                    c.get("startTime") or "",
+                    c.get("learnCount") or "",
+                ])
+    print("HTTP状态分布:", dict(statuses))
     if sample:
         print("SAMPLE:", sample)
+    elif statuses:
+        print("BODY样例:", statuses.most_common(1)[0])
     with open(OUT, "w", encoding="utf-8", newline="") as f:
         w = csv.writer(f)
         w.writerow(HEADER)
