@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""每日增量扫描: 检查 [基线+1, 基线+window] 区间的单课/系列, 收集指定老师(classId)的新课"""
+"""每日增量扫描: 检查 [基线+1, 基线+window] 区间的单课/系列, 收集指定老师(classId)的新课
++ 检测老师已有系列的上下架状态(数据写入 delisted_new.json, 由 send_report 发邮件)"""
 import csv
 import json
 import os
@@ -7,12 +8,16 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 
 BASE = "https://m.weishi100.com/m/course/info"
+QR = "https://m.weishi100.com/m/course/v2/getPayQrCode"
 COOKIE = os.environ.get("WEISHI_COOKIE", "")
 UA = os.environ.get("WEISHI_UA", "Mozilla/5.0")
 TEACHER = os.environ.get("TARGET_CLASS", "59253")
 HEADER = ["course_id", "name", "course_mode", "live_status", "class_id", "classroom_name",
           "publish_status", "have_permission", "price", "start_time", "learn_cnt", "cover_url", "is_target"]
 NEW_CSV = "data/courses/all_courses_new.csv"
+TEACHER_CSV = "data/courses/teacher_courses.csv"
+DELISTED = "data/delisted.json"
+DELISTED_NEW = "delisted_new.json"
 
 
 def fetch(course_id, mode):
@@ -27,7 +32,45 @@ def fetch(course_id, mode):
         return course_id, mode, 0, ""
 
 
+def check_delisted():
+    """检查老师已有系列是否下架, 新下架的写入 delisted_new.json"""
+    series = []
+    with open(TEACHER_CSV, encoding="utf-8-sig") as f:
+        for row in csv.reader(f):
+            if len(row) > 1 and row[0].isdigit() and row[2] == "2":
+                series.append((row[0], row[1]))
+    try:
+        with open(DELISTED, encoding="utf-8") as f:
+            known = set(json.load(f))
+    except Exception:
+        known = set()
+    down = []
+    with ThreadPoolExecutor(max_workers=15) as ex:
+        def q(job):
+            cid, name = job
+            req = urllib.request.Request(QR,
+                data=json.dumps({"courseId": int(cid), "courseMode": 2, "payMethod": 1}).encode(),
+                headers={"Cookie": COOKIE, "User-Agent": UA, "Content-Type": "application/json",
+                         "Origin": "https://m.weishi100.com"})
+            try:
+                with urllib.request.urlopen(req, timeout=15) as r:
+                    return cid, name, json.loads(r.read()).get("msg", "")
+            except Exception:
+                return cid, name, ""
+        for cid, name, msg in ex.map(q, series):
+            if msg == "该课程已下架，不能报名学习！":
+                down.append(cid)
+    new_down = [c for c in down if c not in known]
+    if new_down:
+        with open(DELISTED_NEW, "w", encoding="utf-8") as f:
+            json.dump(new_down, f, ensure_ascii=False, indent=2)
+        print(f"新下架系列 {len(new_down)} 门: {new_down}")
+    with open(DELISTED, "w", encoding="utf-8") as f:
+        json.dump(sorted(known | set(down)), f, ensure_ascii=False, indent=2)
+
+
 def main():
+    check_delisted()
     with open("data/baseline.json", encoding="utf-8") as f:
         base = json.load(f)
     window = int(base.get("window", 500))
@@ -88,6 +131,12 @@ def main():
     if new_teacher:
         with open("new_teacher.json", "w", encoding="utf-8") as f:
             json.dump(new_teacher, f, ensure_ascii=False, indent=2)
+        with open(TEACHER_CSV, "a", encoding="utf-8", newline="") as f:
+            csv.writer(f).writerows([
+                [t["course_id"], t["name"], t["course_mode"], "", TEACHER, "", "", "",
+                 t.get("price", ""), t.get("start_time", ""), t.get("learn_cnt", ""), "", "1"]
+                for t in new_teacher
+            ])
     print(f"扫描完成: 有效响应 {n_ok}, 401 x {n_401}, 老师新课 {len(new_teacher)} 门, 全部新课 {len(new_all)} 门")
     for t in new_teacher:
         print("  ", t["course_id"], t["name"])
