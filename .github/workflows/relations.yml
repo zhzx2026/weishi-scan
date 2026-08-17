@@ -1,0 +1,20 @@
+name: relations
+
+on:
+  workflow_dispatch:
+
+jobs:
+  relations:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 抓取从属关系
+        env:
+          WEISHI_COOKIE: ${{ secrets.WEISHI_COOKIE }}
+          WEISHI_UA: ${{ secrets.WEISHI_UA }}
+        run: python3 scripts/relations.py
+      - name: 上传结果
+        uses: actions/upload-artifact@v4
+        with:
+          name: course-relations
+          path: data/courses/course_relations.csv
