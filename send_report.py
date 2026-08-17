@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""读取 new_teacher.json, 发送 HTML 邮件报告"""
+"""读取 new_teacher.json, 发送 HTML 邮件: 发现新课：<链接>; 已发送过的课程不再重复发"""
 import json
 import os
 import urllib.request
@@ -7,6 +7,20 @@ import urllib.request
 API = "https://mail.sunsetzhong.indevs.in/api/v1/send"
 KEY = os.environ.get("MAIL_API_KEY", "")
 TO = os.environ.get("MAIL_TO", "")
+REPORTED = "data/reported.json"
+
+
+def load_reported():
+    try:
+        with open(REPORTED, encoding="utf-8") as f:
+            return set(json.load(f))
+    except Exception:
+        return set()
+
+
+def save_reported(ids):
+    with open(REPORTED, "w", encoding="utf-8") as f:
+        json.dump(sorted(ids), f, ensure_ascii=False, indent=2)
 
 
 def main():
@@ -15,25 +29,20 @@ def main():
     if not courses:
         print("无新课, 不发送")
         return
-    rows = "".join(
-        f'<tr><td>{c["course_id"]}</td>'
-        f'<td><a href="{c["url"]}">{c["name"]}</a></td>'
-        f'<td>{"系列" if c["course_mode"] == 2 else "单课"}</td>'
-        f'<td>{c.get("price") or ""}</td>'
-        f'<td>{c.get("start_time") or ""}</td>'
-        f'<td>{c.get("learn_cnt") or ""}</td></tr>'
-        for c in courses
+    reported = load_reported()
+    fresh = [c for c in courses if str(c["course_id"]) not in reported]
+    if not fresh:
+        print("全部已发送过, 跳过")
+        return
+    lines = "".join(
+        f'<p style="margin:4px 0">发现新课：'
+        f'<a href="{c["url"]}" style="color:#2563eb;text-decoration:none">{c["name"]}</a></p>'
+        for c in fresh
     )
-    html = (
-        '<div style="font-family:system-ui,sans-serif">'
-        f'<h3>微师老师新课 {len(courses)} 门</h3>'
-        '<table border="1" cellpadding="8" cellspacing="0" style="border-collapse:collapse;font-size:14px">'
-        "<tr><th>课程ID</th><th>课程名</th><th>类型</th><th>价格</th><th>开课时间</th><th>学习人数</th></tr>"
-        f"{rows}</table></div>"
-    )
+    html = f'<div style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.7">{lines}</div>'
     body = json.dumps({
         "to": TO,
-        "subject": f"[微师] 老师新课 {len(courses)} 门",
+        "subject": f"[微师] 发现新课 {len(fresh)} 门",
         "html": html,
     }).encode("utf-8")
     req = urllib.request.Request(API, data=body, headers={
@@ -42,6 +51,9 @@ def main():
     })
     with urllib.request.urlopen(req, timeout=30) as r:
         print("邮件已发送:", r.read().decode("utf-8", "replace"))
+    for c in fresh:
+        reported.add(str(c["course_id"]))
+    save_reported(reported)
 
 
 if __name__ == "__main__":

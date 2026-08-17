@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """每日增量扫描: 检查 [基线+1, 基线+window] 区间的单课/系列, 收集指定老师(classId)的新课"""
+import csv
 import json
 import os
 import urllib.request
@@ -9,6 +10,9 @@ BASE = "https://m.weishi100.com/m/course/info"
 COOKIE = os.environ.get("WEISHI_COOKIE", "")
 UA = os.environ.get("WEISHI_UA", "Mozilla/5.0")
 TEACHER = os.environ.get("TARGET_CLASS", "59253")
+HEADER = ["course_id", "name", "course_mode", "live_status", "class_id", "classroom_name",
+          "publish_status", "have_permission", "price", "start_time", "learn_cnt", "cover_url", "is_target"]
+NEW_CSV = "data/courses/all_courses_new.csv"
 
 
 def fetch(course_id, mode):
@@ -31,7 +35,7 @@ def main():
         (base["lesson_max"] + 1, base["lesson_max"] + window, 1),
         (base["series_max"] + 1, base["series_max"] + window, 2),
     ]
-    new_teacher, n_ok, n_401 = [], 0, 0
+    new_teacher, new_all, n_ok, n_401 = [], [], 0, 0
     for lo, hi, mode in ranges:
         with ThreadPoolExecutor(max_workers=20) as ex:
             for cid, m, status, body in ex.map(lambda i: fetch(i, mode), range(lo, hi + 1)):
@@ -52,6 +56,21 @@ def main():
                             "url": f"https://m.weishi100.com/mweb/series/?id={cid}" if m == 2
                                    else f"https://m.weishi100.com/mweb/course/?id={cid}",
                         })
+                    new_all.append([
+                        cid,
+                        d.get("name", ""),
+                        m,
+                        d.get("liveStatus", ""),
+                        d.get("classId", ""),
+                        d.get("classroomName", ""),
+                        d.get("publishStatus", ""),
+                        d.get("havePermission", ""),
+                        d.get("price", ""),
+                        d.get("startTime", ""),
+                        d.get("learnCount", ""),
+                        d.get("coverUrl", ""),
+                        "1" if str(d.get("classId", "")) == TEACHER else "0",
+                    ])
                 elif status == 401:
                     n_401 += 1
     if n_401 > 50:
@@ -60,10 +79,16 @@ def main():
     base["series_max"] += window
     with open("data/baseline.json", "w", encoding="utf-8") as f:
         json.dump(base, f, ensure_ascii=False, indent=2)
+    if new_all:
+        if not os.path.exists(NEW_CSV):
+            with open(NEW_CSV, "w", encoding="utf-8", newline="") as f:
+                csv.writer(f).writerow(HEADER)
+        with open(NEW_CSV, "a", encoding="utf-8", newline="") as f:
+            csv.writer(f).writerows(new_all)
     if new_teacher:
         with open("new_teacher.json", "w", encoding="utf-8") as f:
             json.dump(new_teacher, f, ensure_ascii=False, indent=2)
-    print(f"扫描完成: 有效响应 {n_ok}, 401 x {n_401}, 老师新课 {len(new_teacher)} 门")
+    print(f"扫描完成: 有效响应 {n_ok}, 401 x {n_401}, 老师新课 {len(new_teacher)} 门, 全部新课 {len(new_all)} 门")
     for t in new_teacher:
         print("  ", t["course_id"], t["name"])
 
