@@ -111,7 +111,7 @@ for cid in ids:
     rows.append([cid2, c.get("name", ""), f"https://m.weishi100.com/mweb/single/1/?id={cid2}",
                  s.get("id", ""), s.get("name", ""), (cr.get("name", "") or "").strip(),
                  c.get("price") or "", c.get("startTime") or 0, c.get("learnCnt") or "",
-                 "是" if can else "否", "正常", buy])
+                 "是" if can else "否", "", buy])
     courses.append({"id": cid2, "name": c.get("name", ""), "cover": c.get("coverUrl", ""),
                     "price": c.get("price") or "", "start": c.get("startTime") or 0,
                     "learn": c.get("learnCnt") or "", "solo": can,
@@ -144,7 +144,9 @@ with open("data/courses/teacher_courses.csv", "a", encoding="utf-8", newline="")
         w.writerow([sid, "", "2", "", "59253", "", "", "", "", "", "", "", "1"])
 print(f"系列检测: {len(all_series)} 个 (新增补录 {len(all_series - set(series_ids))})")
 
-# 5. 写出 courses_data.csv
+# 5. 写出 courses_data.csv (系列状态用判定后的值)
+for r in rows:
+    r[10] = series_status.get(str(r[3]), "正常")
 with open("data/courses/courses_data.csv", "w", encoding="utf-8-sig", newline="") as f:
     w = csv.writer(f)
     w.writerow(["course_id", "course_name", "course_url", "series_id", "series_name",

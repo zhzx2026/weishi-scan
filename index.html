@@ -6,7 +6,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>微师课程中心</title>
+<title>课程系列总览</title>
 <style>
 :root {
   --bg: #0f0f1a;
@@ -192,31 +192,24 @@ body::before {
 
 /* Series Card */
 .series-card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  margin-bottom: 14px;
-  overflow: hidden;
-  transition: .3s;
-  animation: cardIn .5s ease both;
-}
+   background: var(--card);
+   border: 1px solid var(--border);
+   border-radius: 16px;
+   margin-bottom: 14px;
+   overflow: hidden;
+   transition: .3s;
+   animation: cardIn .5s ease both;
+   display: flex;
+   align-items: center;
+   flex-wrap: wrap;
+   gap: 10px 14px;
+   padding: 16px 18px;
+ }
 @keyframes cardIn {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
 .series-card:hover { border-color: rgba(108,99,255,.25); box-shadow: 0 4px 30px var(--glow); }
-
-.series-header {
-  padding: 16px 18px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  user-select: none;
-  transition: .2s;
-}
-.series-header:hover { background: var(--card-hover); }
 
 .series-name {
   font-size: 1rem;
@@ -249,48 +242,17 @@ body::before {
 .solo-ok { background: rgba(46,213,115,.12); color: var(--green); border:1px solid rgba(46,213,115,.2); }
 .solo-none { background: rgba(255,71,87,.12); color: var(--red); border:1px solid rgba(255,71,87,.2); }
 
-.toggle-arrow {
-  width: 28px; height: 28px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 8px;
-  background: rgba(255,255,255,.04);
-  transition: .3s;
-  flex-shrink: 0;
-  font-size: .8rem;
-  color: var(--text-dim);
-}
-.toggle-arrow.open { transform: rotate(90deg); background: var(--glow); color: var(--accent); }
-
 .series-meta {
-  width: 100%;
-  display: flex;
-  gap: 16px;
-  font-size: .78rem;
-  color: var(--text-dim);
-  margin-top: 4px;
-  flex-wrap: wrap;
-}
+   display: flex;
+   gap: 16px;
+   font-size: .78rem;
+   color: var(--text-dim);
+   margin-left: auto;
+   flex-wrap: wrap;
+ }
 .series-meta span { display: flex; align-items: center; gap: 4px; }
 
 /* Course List */
-.course-list {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height .4s cubic-bezier(.4,0,.2,1);
-}
-.course-list.open { max-height: 5000px; }
-
-.course-item {
-  display: flex;
-  align-items: center;
-  padding: 10px 18px 10px 30px;
-  gap: 10px;
-  flex-wrap: wrap;
-  font-size: .88rem;
-  border-top: 1px solid var(--border);
-  transition: .2s;
-  position: relative;
-}
 .course-item:hover { background: rgba(255,255,255,.02); }
 .course-item::before {
   content: '';
@@ -304,25 +266,7 @@ body::before {
   opacity: .5;
 }
 
-.course-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-.course-name a { color: var(--accent2); text-decoration: none; transition: .2s; }
 .course-name a:hover { color: #fff; text-decoration: underline; }
-.course-name.no-sell a { color: var(--text-dim); text-decoration: line-through; opacity: .6; }
-
-.ctag {
-  padding: 2px 8px;
-  border-radius: 6px;
-  font-size: .68rem;
-  font-weight: 600;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.ctag-sell { background: rgba(46,213,115,.1); color: var(--green); border: 1px solid rgba(46,213,115,.2); }
-.ctag-bought { background: rgba(255,255,255,.05); color: var(--text-dim); border: 1px solid var(--border); }
-.ctag-free { background: rgba(255,165,2,.1); color: var(--orange); border: 1px solid rgba(255,165,2,.2); }
-
-.cmeta { font-size: .78rem; color: var(--text-dim); white-space: nowrap; flex-shrink: 0; }
-
 .highlight { background: rgba(108,99,255,.35); border-radius: 3px; padding: 0 2px; color: #fff; }
 
 .no-results {
@@ -337,8 +281,7 @@ body.light { --bg: #f5f6fa; --card: #fff; --card-hover: #f8f9ff; --text: #2c3e50
 body.light .sticky-header { background: rgba(245,246,250,.9); }
 body.light .search-box { background: rgba(0,0,0,.04); color: #2c3e50; }
 body.light .series-card { box-shadow: 0 2px 12px rgba(0,0,0,.05); }
-body.light .course-name a { color: #4a90d9; }
-body.light .highlight { background: rgba(108,99,255,.2); color: #2c3e50; }
+body.light body.light .highlight { background: rgba(108,99,255,.2); color: #2c3e50; }
 
 /* Progress bar */
 .progress-bar {
@@ -375,23 +318,9 @@ body.light .highlight { background: rgba(108,99,255,.2); color: #2c3e50; }
 
 /* Expand/Collapse all */
 .bulk-actions { display: flex; gap: 8px; margin-bottom: 14px; }
-.bulk-btn {
-  padding: 6px 14px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text-dim);
-  font-size: .8rem;
-  cursor: pointer;
-  transition: .2s;
-}
-.bulk-btn:hover { border-color: var(--accent); color: var(--text); background: var(--glow); }
-
 @media(max-width:600px) {
   .sticky-header { padding: 12px 14px 10px; }
   .logo { font-size: 1.2rem; }
-  .series-header { padding: 12px 14px; }
-  .course-item { padding: 8px 14px 8px 24px; font-size: .84rem; }
   .course-item::before { left: 14px; }
   .stat-pill { padding: 4px 10px; font-size: .76rem; }
 }
@@ -403,14 +332,14 @@ body.light .highlight { background: rgba(108,99,255,.2); color: #2c3e50; }
 <div class="sticky-header">
   <div class="header-inner">
     <div class="top-row">
-      <span class="logo">⚡ 微师课程中心</span>
+      <span class="logo">⚡ 课程系列总览</span>
       <button class="theme-toggle" id="themeBtn" title="切换主题">🌙</button>
     </div>
     <div class="stats-bar" id="statsBar"></div>
     <div class="search-row">
       <div class="search-wrap">
         <span class="icon">🔍</span>
-        <input type="text" class="search-box" id="searchBox" placeholder="搜索课程名、系列名…" autocomplete="off">
+        <input type="text" class="search-box" id="searchBox" placeholder="搜索系列名…" autocomplete="off">
       </div>
       <span class="search-count" id="searchCount"></span>
     </div>
@@ -419,7 +348,7 @@ body.light .highlight { background: rgba(108,99,255,.2); color: #2c3e50; }
       <button class="chip" data-filter="normal">正常</button>
       <button class="chip" data-filter="offline">下架</button>
       <button class="chip" data-filter="purchased">已购买</button>
-      <button class="chip" data-filter="cansell">可单买课程</button>
+      <button class="chip" data-filter="cansell">有可单买</button>
       <button class="chip" data-filter="free">含免费</button>
     </div>
   </div>
@@ -438,7 +367,6 @@ body.light .highlight { background: rgba(108,99,255,.2); color: #2c3e50; }
 const CSV_URL = 'https://zhzx2026.github.io/weishi-scan/data/courses/courses_data.csv';
 let allSeries = [];
 let currentFilter = 'all';
-let openStates = {};
 
 /* ── CSV Parsing ── */
 function parseCSV(text) {
@@ -522,20 +450,22 @@ function processData(rows) {
 
 /* ── Stats ── */
 function updateStats(series) {
-  let tc=0, cs=0, off=0, purchased=0, free=0;
+  let tc=0, cs=0, off=0, purchased=0, soloSeries=0;
   series.forEach(s => {
     tc += s.courses.length;
     if (s.series_status==='下架') off++;
     if (s.series_status==='已购买') purchased++;
+    if (s.hasCanSell) soloSeries++;
     s.courses.forEach(c => {
       if (c.purchase_status==='可单独购买') cs++;
-      if (c.purchase_status==='免费') free++;
     });
   });
   document.getElementById('statsBar').innerHTML =
-    pill('📚',tc,'门课程') + pill('📦',series.length,'个系列') +
-    pill('🛒',cs,'可单买') + pill('🔻',off,'系列下架') +
-    pill('🎁',free,'免费') + pill('✅',purchased,'已购买');
+    pill('📦',series.length,'个系列') +
+    pill('🛒',cs,'门可单买') +
+    pill('✨',soloSeries,'个系列有可单买') +
+    pill('🔻',off,'系列下架') +
+    pill('✅',purchased,'已购买');
 }
 function pill(icon,num,label) {
   return `<span class="stat-pill">${icon} <span class="num">${num}</span> ${label}</span>`;
@@ -587,8 +517,7 @@ function render(seriesList, query) {
     const result = [];
     filtered.forEach(s => {
       const sm = s.series_name.toLowerCase().includes(q);
-      const mc = s.courses.filter(c => c.course_name.toLowerCase().includes(q));
-      if (sm || mc.length) result.push({ ...s, courses: sm ? s.courses : mc });
+      if (sm) result.push(s);
     });
     filtered = result;
   }
@@ -597,70 +526,28 @@ function render(seriesList, query) {
   document.getElementById('searchCount').textContent = `${filtered.length}/${total} 系列`;
 
   if (!filtered.length) {
-    container.innerHTML = `<div class="no-results"><div class="big">🔭</div><p>没有找到匹配的课程或系列</p><p style="font-size:.85rem">试试其他关键词或筛选条件</p></div>`;
+    container.innerHTML = `<div class="no-results"><div class="big">🔭</div><p>没有找到匹配的系列</p><p style="font-size:.85rem">试试其他关键词或筛选条件</p></div>`;
     return;
   }
 
-  let html = `<div class="bulk-actions">
-    <button class="bulk-btn" onclick="expandAll()">📂 全部展开</button>
-    <button class="bulk-btn" onclick="collapseAll()">📁 全部折叠</button>
-  </div>`;
+  let html = '';
 
   filtered.forEach((s, idx) => {
     const sid = s.series_id;
-    const isOpen = openStates[sid] || false;
     const url = `https://m.weishi100.com/mweb/series/?id=${encodeURIComponent(sid)}`;
 
     html += `<div class="series-card" style="animation-delay:${Math.min(idx*0.04,0.6)}s">`;
-    html += `<div class="series-header" onclick="toggleSeries('${sid}')">`;
-    html += `<a class="series-name" href="${esc(url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">${hl(s.series_name,q)}</a>`;
+    html += `<a class="series-name" href="${esc(url)}" target="_blank" rel="noopener">${hl(s.series_name,q)}</a>`;
     html += statusBadge(s.series_status);
-    html += `<span class="toggle-arrow ${isOpen?'open':''}" id="arrow-${sid}">▶</span>`;
     html += `<div class="series-meta">`;
     html += `<span>📖 ${s.courses.length}门</span>`;
     html += `<span class="solo-stat">${soloStat(s)}</span>`;
     html += `<span>👥 ${s.totalLearners}人学</span>`;
     html += `<span>🕐 ${esc(shortDate(s.latestTime))}</span>`;
     html += `</div></div>`;
-
-    html += `<div class="course-list ${isOpen?'open':''}" id="cl-${sid}">`;
-    s.courses.forEach(c => {
-      const ps = c.purchase_status;
-      let nc = 'course-name', tag = '';
-      if (ps === '不能单独购买(需随系列)') nc = 'course-name no-sell';
-      if (ps === '可单独购买') tag = '<span class="ctag ctag-sell">可单买</span>';
-      if (ps === '已购买') tag = '<span class="ctag ctag-bought">已购买</span>';
-      if (ps === '免费') tag = '<span class="ctag ctag-free">免费</span>';
-
-      html += `<div class="course-item">`;
-      html += `<div class="${nc}"><a href="${esc(c.course_url)}" target="_blank" rel="noopener">${hl(c.course_name,q)}</a>${tag}</div>`;
-      html += `<span class="cmeta">${esc(shortDate(c.start_time))}</span>`;
-      html += `<span class="cmeta">👤${c.learn_cnt}</span>`;
-      html += `</div>`;
-    });
-    html += `</div></div>`;
   });
 
   container.innerHTML = html;
-}
-
-function toggleSeries(sid) {
-  openStates[sid] = !openStates[sid];
-  const cl = document.getElementById('cl-'+sid);
-  const ar = document.getElementById('arrow-'+sid);
-  if (cl) cl.classList.toggle('open');
-  if (ar) ar.classList.toggle('open');
-}
-
-function expandAll() {
-  document.querySelectorAll('.course-list').forEach(el => el.classList.add('open'));
-  document.querySelectorAll('.toggle-arrow').forEach(el => el.classList.add('open'));
-  allSeries.forEach(s => openStates[s.series_id] = true);
-}
-function collapseAll() {
-  document.querySelectorAll('.course-list').forEach(el => el.classList.remove('open'));
-  document.querySelectorAll('.toggle-arrow').forEach(el => el.classList.remove('open'));
-  allSeries.forEach(s => openStates[s.series_id] = false);
 }
 
 /* ── Error / File fallback ── */
