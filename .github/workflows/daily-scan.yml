@@ -16,14 +16,14 @@ jobs:
           WEISHI_COOKIE: ${{ secrets.WEISHI_COOKIE }}
           WEISHI_UA: ${{ secrets.WEISHI_UA }}
           TARGET_CLASS: ${{ vars.TARGET_CLASS }}
-        run: python3 daily_scan.py
+        run: python3 scripts/daily_scan.py
 
       - name: 邮件汇报老师新课
         if: hashFiles('new_teacher.json') != ''
         env:
           MAIL_API_KEY: ${{ secrets.MAIL_API_KEY }}
           MAIL_TO: ${{ secrets.MAIL_TO }}
-        run: python3 send_report.py
+        run: python3 scripts/send_report.py
 
       - name: 汇报扫描失败
         if: failure()
