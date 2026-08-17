@@ -54,7 +54,7 @@ def main():
                             "start_time": d.get("startTime"),
                             "learn_cnt": d.get("learnCount"),
                             "url": f"https://m.weishi100.com/mweb/series/?id={cid}" if m == 2
-                                   else f"https://m.weishi100.com/cweb/#/player/{cid}",
+                                   else f"https://m.weishi100.com/mweb/single/1/?id={cid}",
                         })
                     new_all.append([
                         cid,
