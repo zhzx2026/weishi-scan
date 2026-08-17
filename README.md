@@ -5,6 +5,7 @@
 ## 结构
 
 ```
+index.html                        # 老师课程总览 (GitHub Pages 在线查看)
 .github/workflows/daily-scan.yml   # 每日定时任务 (UTC 1:00 = 北京时间 9:00)
 scripts/
   daily_scan.py                    # 增量扫描 [基线, 基线+500], 新课追加 CSV
@@ -12,7 +13,7 @@ scripts/
 data/
   baseline.json                    # 扫描基线 (单课/系列最大ID)
   reported.json                    # 已发邮件通知过的课程ID (不重复发)
-  courses/                         # 全量课程数据 (4批) + 每日新增
+  courses/                         # 老师数据 + 每日新增
 ```
 
 ## Secrets
@@ -30,3 +31,7 @@ gh workflow run daily-scan.yml
 ## 邮件格式
 
 发现新课：课程名(链接) — 单课: mweb/single/1/?id=X, 系列课: mweb/series/?id=X
+
+## 课程总览
+
+https://zhzx2026.github.io/weishi-scan/  (老师 645 门单课, 按系列分组, 支持搜索)
