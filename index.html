@@ -413,6 +413,7 @@ function processData(rows) {
 
 /* ── Stats ── */
 function updateStats(series) {
+  let cs=0, off=0, purchased=0, soloSeries=0;
   series.forEach(s => {
     if (s.series_status==='下架') off++;
     if (s.series_status==='已购买') purchased++;
