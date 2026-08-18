@@ -193,6 +193,7 @@ body::before {
 /* Series List (clean) */
 .series-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 12px;
   padding: 12px 4px;
@@ -235,6 +236,53 @@ body::before {
 .solo-stat { display:inline-flex; align-items:center; padding:2px 8px; border-radius:8px; font-size:.68rem; font-weight:700; white-space:nowrap; }
 .solo-ok { background: rgba(46,213,115,.12); color: var(--green); border:1px solid rgba(46,213,115,.2); }
 .solo-none { background: rgba(255,71,87,.12); color: var(--red); border:1px solid rgba(255,71,87,.2); }
+
+/* 展开子课程 */
+.arrow {
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: .8rem;
+  width: 16px;
+  text-align: center;
+  user-select: none;
+  flex-shrink: 0;
+  transition: .2s;
+}
+.arrow:hover { color: var(--accent2); }
+.series-detail {
+  flex-basis: 100%;
+  padding: 4px 0 8px 28px;
+  border-bottom: 1px solid var(--border);
+}
+.course-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+}
+.course-name {
+  font-size: .85rem;
+  color: var(--text);
+  text-decoration: none;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.course-name:hover { color: var(--accent2); }
+.course-name.down { color: var(--text-dim); text-decoration: line-through; }
+.cbadge {
+  display: inline-flex; align-items: center;
+  padding: 2px 8px; border-radius: 6px;
+  font-size: .64rem; font-weight: 700; white-space: nowrap;
+  flex-shrink: 0;
+}
+.c-bought { background: rgba(255,255,255,.08); color: var(--text-dim); border: 1px solid var(--border); }
+.c-solo { background: rgba(46,213,115,.12); color: var(--green); border: 1px solid rgba(46,213,115,.2); }
+.c-free { background: rgba(108,99,255,.15); color: #9a94ff; border: 1px solid rgba(108,99,255,.25); }
+.c-nosolo { background: rgba(255,71,87,.1); color: var(--red); border: 1px solid rgba(255,71,87,.2); }
+.c-other { background: rgba(255,255,255,.06); color: var(--text-dim); border: 1px solid var(--border); }
 
 .highlight { background: rgba(108,99,255,.35); border-radius: 3px; padding: 0 2px; color: #fff; }
 
@@ -501,13 +549,36 @@ function render(seriesList, query) {
     const url = `https://m.weishi100.com/mweb/series/?id=${encodeURIComponent(sid)}`;
 
     html += `<div class="series-row" style="animation-delay:${Math.min(idx*0.04,0.6)}s">`;
+    html += `<span class="arrow" onclick="toggleExpand(this)">▸</span>`;
     html += `<a class="series-name" href="${esc(url)}" target="_blank" rel="noopener">${hl(s.series_name,q)}</a>`;
     html += statusBadge(s.series_status);
     html += `<span class="solo-stat">${soloStat(s)}</span>`;
+    html += `<div class="series-detail" style="display:none">`;
+    s.courses.forEach(c => {
+      const cu = `https://m.weishi100.com/mweb/single/1/?id=${c.course_id}`;
+      const badge = courseBadge(c.purchase_status);
+      html += `<div class="course-row"><a class="course-name ${c.purchase_status==='不能单独购买(需随系列)'?'down':''}" href="${esc(cu)}" target="_blank" rel="noopener">${esc(c.course_name)}</a>${badge}</div>`;
+    });
+    html += `</div>`;
     html += `</div>`;
   });
 
   container.innerHTML = html;
+}
+
+function toggleExpand(arrow) {
+  const detail = arrow.parentElement.querySelector('.series-detail');
+  const isOpen = detail.style.display !== 'none';
+  detail.style.display = isOpen ? 'none' : 'block';
+  arrow.textContent = isOpen ? '▸' : '▾';
+}
+
+function courseBadge(st) {
+  if (st === '已购买') return '<span class="cbadge c-bought">已购买</span>';
+  if (st === '可单独购买') return '<span class="cbadge c-solo">可单独购买</span>';
+  if (st === '免费') return '<span class="cbadge c-free">免费</span>';
+  if (st === '不能单独购买(需随系列)') return '<span class="cbadge c-nosolo">随系列</span>';
+  return `<span class="cbadge c-other">${esc(st)}</span>`;
 }
 
 /* ── Error / File fallback ── */
