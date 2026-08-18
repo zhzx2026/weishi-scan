@@ -455,7 +455,7 @@ function statusBadge(st) {
 /* 系列购买统计 [已购a/可买b/总数c] */
 function soloStat(s) {
   const a = s.boughtCount || 0, b = s.canBuyCount || 0, y = s.totalCount || 0;
-  return `<span class="solo-stat ${b>0?'solo-ok':'solo-none'}">已购[${a}]/可买[${b}]/共[${y}]</span>`;
+  return `<span class="solo-stat ${b>0?'solo-ok':'solo-none'}">[${a}/${b}/${y}]</span>`;
 }
 
 /* ── Filtering ── */
