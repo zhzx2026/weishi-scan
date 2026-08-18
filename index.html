@@ -399,12 +399,16 @@ function processData(rows) {
     s.latestTime = '';
     s.hasCanSell = false;
     s.soloCount = 0;
+    s.boughtCount = 0;
+    s.canBuyCount = 0;
     s.totalCount = s.courses.length;
     for (let i = s.courses.length-1; i >= 0; i--) {
       if (s.courses[i].start_time && !s.latestTime) s.latestTime = s.courses[i].start_time;
     }
     s.courses.forEach(c => {
+      if (c.purchase_status === '已购买') { s.boughtCount++; }
       if (c.can_sell_alone === '是') { s.hasCanSell = true; s.soloCount++; }
+      if (c.purchase_status === '可单独购买') { s.canBuyCount++; }
     });
   });
   list.sort((a,b) => (b.latestTime||'').localeCompare(a.latestTime||''));
@@ -448,10 +452,10 @@ function statusBadge(st) {
   return `<span class="badge badge-gray">${esc(st)}</span>`;
 }
 
-/* 系列可单买统计 [x/y] */
+/* 系列购买统计 [已购a/可买b/总数c] */
 function soloStat(s) {
-  const x = s.soloCount || 0, y = s.totalCount || 0;
-  return `<span class="solo-stat ${x>0?'solo-ok':'solo-none'}">可单买[${x}/${y}]</span>`;
+  const a = s.boughtCount || 0, b = s.canBuyCount || 0, y = s.totalCount || 0;
+  return `<span class="solo-stat ${b>0?'solo-ok':'solo-none'}">已购[${a}]/可买[${b}]/共[${y}]</span>`;
 }
 
 /* ── Filtering ── */
