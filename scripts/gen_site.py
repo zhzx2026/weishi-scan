@@ -82,6 +82,26 @@ def qr_msg(cid, mode):
     d = qr.get(f"{cid}_{mode}", {})
     return d.get("code"), d.get("msg", "")
 
+# 3.5 拉取购买记录 (权威已购名单)
+bought_courses = set()   # 已购单课 id
+bought_series = set()    # 已购系列 id
+page = 1
+while True:
+    try:
+        rec = http_get(f"https://m.weishi100.com/m/user/purchaseRecord?pageNum={page}&pageSize=50")
+    except Exception:
+        break
+    courses = (rec.get("data") or {}).get("courses") or []
+    if not courses:
+        break
+    for c in courses:
+        cid = str(c.get("id"))
+        (bought_series if c.get("courseMode") == 2 else bought_courses).add(cid)
+    if len(courses) < 50:
+        break
+    page += 1
+print(f"购买记录: 单课 {len(bought_courses)} 门 {sorted(bought_courses)} | 系列 {len(bought_series)} 个 {sorted(bought_series)}")
+
 # 4. 组装数据
 series_status = {}
 solo = {}
@@ -96,17 +116,16 @@ for cid in ids:
     can = bool(c.get("canSellAlone"))
     solo[cid2] = can
     code, msg = qr_msg(cid, 1)
-    if can:
-        if "不可重复购买" in msg:
-            buy = "已购买"
-        elif "免费" in msg:
-            buy = "免费"
-        elif code == 200:
-            buy = "可单独购买"
-        else:
-            buy = f"状态异常({msg})"
+    if cid2 in bought_courses:
+        buy = "已购买"
+    elif "不可重复购买" in msg:
+        buy = "已购买"
+    elif "免费" in msg:
+        buy = "免费"
+    elif code == 200:
+        buy = "可单独购买" if can else "不能单独购买(需随系列)"
     else:
-        buy = "不能单独购买(需随系列)"
+        buy = f"状态异常({msg})"
     series_status.setdefault(str(s.get("id", "")), "正常")
     rows.append([cid2, c.get("name", ""), f"https://m.weishi100.com/mweb/single/1/?id={cid2}",
                  s.get("id", ""), s.get("name", ""), (cr.get("name", "") or "").strip(),
@@ -127,6 +146,9 @@ with ThreadPoolExecutor(max_workers=20) as ex:
         series_qr[sid] = d
 
 for sid in sorted(all_series):
+    if sid in bought_series:
+        series_status[sid] = "已购买"
+        continue
     d = series_qr.get(sid, {})
     code, msg = d.get("code"), d.get("msg", "")
     if "不可重复购买" in msg:
