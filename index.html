@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -8,18 +6,19 @@
 <title>课程系列总览</title>
 <style>
 :root {
-  --bg: #0f0f1a;
-  --card: #1a1a2e;
-  --card-hover: #1f1f35;
+  --bg: #0d0d17;
+  --card: #171728;
+  --card-hover: #1d1d33;
   --accent: #6c63ff;
   --accent2: #00d2ff;
-  --text: #e0e0e0;
-  --text-dim: #888;
+  --text: #e8e8f0;
+  --text-dim: #8a8a9e;
   --red: #ff4757;
   --green: #2ed573;
   --orange: #ffa502;
-  --border: rgba(255,255,255,.06);
-  --glow: rgba(108,99,255,.15);
+  --border: rgba(255,255,255,.07);
+  --glow: rgba(108,99,255,.18);
+  --radius: 14px;
 }
 
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -32,7 +31,6 @@ body {
   overflow-x: hidden;
 }
 
-/* Animated background */
 body::before {
   content: '';
   position: fixed;
@@ -40,10 +38,10 @@ body::before {
   left: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(ellipse at 20% 50%, rgba(108,99,255,.08) 0%, transparent 50%),
+  background: radial-gradient(ellipse at 20% 50%, rgba(108,99,255,.09) 0%, transparent 50%),
               radial-gradient(ellipse at 80% 20%, rgba(0,210,255,.06) 0%, transparent 50%),
               radial-gradient(ellipse at 50% 80%, rgba(255,71,87,.05) 0%, transparent 50%);
-  animation: bgFloat 20s ease-in-out infinite alternate;
+  animation: bgFloat 22s ease-in-out infinite alternate;
   z-index: 0;
   pointer-events: none;
 }
@@ -52,325 +50,227 @@ body::before {
   100% { transform: translate(-3%,3%) rotate(3deg); }
 }
 
-/* Sticky Header */
-.sticky-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: rgba(15,15,26,.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
-  padding: 16px 20px 14px;
-}
-.header-inner { max-width: 960px; margin: 0 auto; position: relative; z-index: 1; }
+.container { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 20px 20px 60px; }
 
-.top-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
-.logo {
-  font-size: 1.5rem;
+/* ── Header ── */
+.hero {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 10px 0 20px;
+}
+.hero h1 {
+  font-size: 1.6rem;
   font-weight: 800;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  background: linear-gradient(135deg, #6c63ff, #00d2ff);
   -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
   background-clip: text;
-  letter-spacing: -0.5px;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: .5px;
 }
-.theme-toggle {
-  margin-left: auto;
-  background: none;
-  border: 1px solid var(--border);
-  color: var(--text);
-  border-radius: 50%;
-  width: 36px; height: 36px;
-  cursor: pointer;
-  font-size: 1.1rem;
-  display: flex; align-items: center; justify-content: center;
-  transition: .3s;
-}
-.theme-toggle:hover { border-color: var(--accent); background: var(--glow); }
+.hero .sub { color: var(--text-dim); font-size: .82rem; margin-top: 4px; }
+.hero .checktime { font-size: .78rem; color: var(--text-dim); background: rgba(255,255,255,.04); border: 1px solid var(--border); padding: 6px 14px; border-radius: 10px; }
 
-/* Stats */
-.stats-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+/* ── Stats ── */
+.stats-bar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
 .stat-pill {
-  background: rgba(255,255,255,.05);
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 5px 14px;
-  font-size: .82rem;
-  display: flex; align-items: center; gap: 6px;
-  transition: .3s;
-  cursor: default;
-}
-.stat-pill:hover { background: var(--glow); border-color: var(--accent); }
-.stat-pill .num {
-  font-weight: 700;
-  font-size: .95rem;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Search */
-.search-row { display: flex; gap: 10px; align-items: center; }
-.search-wrap {
-  flex: 1;
-  position: relative;
-}
-.search-wrap .icon {
-  position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 1rem;
-  color: var(--text-dim);
-  pointer-events: none;
-}
-.search-box {
-  width: 100%;
-  padding: 11px 14px 11px 40px;
-  background: rgba(255,255,255,.06);
-  border: 1.5px solid var(--border);
   border-radius: 12px;
-  color: var(--text);
-  font-size: .95rem;
-  outline: none;
-  transition: .3s;
-}
-.search-box::placeholder { color: var(--text-dim); }
-.search-box:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow); }
-.search-count { font-size: .82rem; color: var(--text-dim); white-space: nowrap; min-width: 85px; text-align: right; }
-
-/* Filter chips */
-.filter-row { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
-.chip {
-  padding: 4px 12px;
-  border-radius: 16px;
-  font-size: .78rem;
-  border: 1px solid var(--border);
-  background: transparent;
+  padding: 8px 14px;
+  font-size: .8rem;
   color: var(--text-dim);
+  box-shadow: 0 4px 20px rgba(0,0,0,.2);
+}
+.stat-pill .num { font-size: 1.05rem; font-weight: 800; color: var(--text); }
+.stat-pill.hl-green .num { color: var(--green); }
+.stat-pill.hl-red .num { color: var(--red); }
+.stat-pill.hl-blue .num { color: var(--accent2); }
+
+/* ── Controls ── */
+.controls { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; flex-wrap: wrap; }
+.search-wrap { position: relative; flex: 1; min-width: 220px; }
+.search-wrap input {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 11px 16px 11px 40px;
+  color: var(--text);
+  font-size: .9rem;
+  outline: none;
+  transition: .2s;
+}
+.search-wrap input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow); }
+.search-wrap .ico { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-dim); font-size: .9rem; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip {
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-size: .8rem;
   cursor: pointer;
   transition: .2s;
   user-select: none;
 }
 .chip:hover { border-color: var(--accent); color: var(--text); }
-.chip.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.chip.active { background: linear-gradient(135deg, rgba(108,99,255,.25), rgba(0,210,255,.15)); border-color: var(--accent); color: #fff; }
+#searchCount { font-size: .78rem; color: var(--text-dim); margin-left: auto; white-space: nowrap; }
 
-/* Container */
-.container { max-width: 960px; margin: 0 auto; padding: 20px 16px 60px; position: relative; z-index: 1; }
-
-/* Loading */
-.loading { text-align: center; padding: 80px 20px; }
-.loader {
-  width: 48px; height: 48px;
-  border: 3px solid var(--border);
-  border-top-color: var(--accent);
-  border-right-color: var(--accent2);
-  border-radius: 50%;
-  animation: spin .8s linear infinite;
-  margin: 0 auto 20px;
+/* ── Card Grid ── */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 14px;
 }
-@keyframes spin { to { transform: rotate(360deg); } }
-.loading p { color: var(--text-dim); }
-
-/* Error */
-.error-box { text-align: center; padding: 80px 20px; }
-.error-box .err-icon { font-size: 3rem; margin-bottom: 16px; }
-.error-box p { color: var(--text-dim); margin-bottom: 12px; }
-.file-btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 12px 28px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
-  color: #fff; border: none; border-radius: 12px;
-  font-size: 1rem; cursor: pointer; transition: .3s;
-  font-weight: 600;
-}
-.file-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(108,99,255,.3); }
-#fileInput { display: none; }
-
-/* Series Card */
-/* Series List (clean) */
-.series-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 4px;
-  border-bottom: 1px solid var(--border);
+.series-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  cursor: pointer;
+  transition: transform .2s, border-color .2s, background .2s;
   animation: cardIn .4s ease both;
 }
-.series-row:last-child { border-bottom: none; }
+.series-card:hover { background: var(--card-hover); border-color: rgba(108,99,255,.4); transform: translateY(-2px); }
+.series-card.expanded { border-color: rgba(0,210,255,.4); }
 @keyframes cardIn {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.series-name {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text);
-  text-decoration: none;
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  transition: .2s;
-}
-.series-name:hover { color: var(--accent2); }
+.card-head { display: flex; align-items: center; gap: 10px; }
+.card-head .arrow { color: var(--text-dim); font-size: .75rem; transition: transform .25s; flex-shrink: 0; }
+.series-card.expanded .arrow { transform: rotate(90deg); color: var(--accent2); }
+.card-title { font-size: .95rem; font-weight: 700; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-decoration: none; color: var(--text); }
+.card-title:hover { color: var(--accent2); }
 
-.badge {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 3px 10px;
-  border-radius: 8px;
-  font-size: .7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: .3px;
-  white-space: nowrap;
+.card-sub { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+.solo-stat { font-size: .7rem; font-weight: 700; padding: 3px 9px; border-radius: 8px; white-space: nowrap; }
+.solo-ok { background: rgba(46,213,115,.12); color: var(--green); border: 1px solid rgba(46,213,115,.25); }
+.solo-none { background: rgba(255,71,87,.1); color: var(--red); border: 1px solid rgba(255,71,87,.22); }
+.card-count { font-size: .72rem; color: var(--text-dim); margin-left: auto; }
+
+/* 比例条 */
+.bar-wrap { margin-top: 10px; }
+.bar {
+  height: 6px;
+  border-radius: 4px;
+  background: rgba(255,255,255,.06);
+  overflow: hidden;
+  display: flex;
 }
-.badge-red { background: rgba(255,71,87,.15); color: var(--red); border: 1px solid rgba(255,71,87,.2); }
-.badge-green { background: rgba(46,213,115,.12); color: var(--green); border: 1px solid rgba(46,213,115,.2); }
-.badge-gray { background: rgba(255,255,255,.06); color: var(--text-dim); border: 1px solid var(--border); }
-.solo-stat { display:inline-flex; align-items:center; padding:2px 8px; border-radius:8px; font-size:.68rem; font-weight:700; white-space:nowrap; }
-.solo-ok { background: rgba(46,213,115,.12); color: var(--green); border:1px solid rgba(46,213,115,.2); }
-.solo-none { background: rgba(255,71,87,.12); color: var(--red); border:1px solid rgba(255,71,87,.2); }
+.bar .seg-bought { background: linear-gradient(90deg, #8a7dff, var(--accent)); }
+.bar .seg-canbuy { background: linear-gradient(90deg, var(--accent2), #2ed573); }
+.bar-labels { display: flex; justify-content: space-between; font-size: .66rem; color: var(--text-dim); margin-top: 5px; }
+.bar-labels b { font-weight: 700; }
+.bar-labels .lb { color: #9a94ff; }
+.bar-labels .lc { color: #4fe3c2; }
 
 /* 展开子课程 */
-.arrow {
-  cursor: pointer;
-  color: var(--text-dim);
-  font-size: .8rem;
-  width: 16px;
-  text-align: center;
-  user-select: none;
-  flex-shrink: 0;
-  transition: .2s;
-}
-.arrow:hover { color: var(--accent2); }
-.series-detail {
-  flex-basis: 100%;
-  padding: 4px 0 8px 28px;
-  border-bottom: 1px solid var(--border);
-}
-.course-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 5px 0;
-}
-.course-name {
-  font-size: .85rem;
-  color: var(--text);
-  text-decoration: none;
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+.series-detail { margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border); }
+.course-row { display: flex; align-items: center; gap: 10px; padding: 6px 2px; border-radius: 8px; transition: .15s; }
+.course-row:hover { background: rgba(255,255,255,.03); }
+.course-name { font-size: .82rem; color: var(--text); text-decoration: none; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .course-name:hover { color: var(--accent2); }
 .course-name.down { color: var(--text-dim); text-decoration: line-through; }
-.cbadge {
-  display: inline-flex; align-items: center;
-  padding: 2px 8px; border-radius: 6px;
-  font-size: .64rem; font-weight: 700; white-space: nowrap;
-  flex-shrink: 0;
-}
+.cbadge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 6px; font-size: .62rem; font-weight: 700; white-space: nowrap; flex-shrink: 0; }
 .c-bought { background: rgba(255,255,255,.08); color: var(--text-dim); border: 1px solid var(--border); }
-.c-solo { background: rgba(46,213,115,.12); color: var(--green); border: 1px solid rgba(46,213,115,.2); }
+.c-solo { background: rgba(46,213,115,.12); color: var(--green); border: 1px solid rgba(46,213,115,.22); }
 .c-free { background: rgba(108,99,255,.15); color: #9a94ff; border: 1px solid rgba(108,99,255,.25); }
-.c-nosolo { background: rgba(255,71,87,.1); color: var(--red); border: 1px solid rgba(255,71,87,.2); }
+.c-nosolo { background: rgba(255,71,87,.1); color: var(--red); border: 1px solid rgba(255,71,87,.22); }
 .c-other { background: rgba(255,255,255,.06); color: var(--text-dim); border: 1px solid var(--border); }
+
+/* 状态徽标 */
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 8px; font-size: .66rem; font-weight: 700; white-space: nowrap; }
+.badge-red { background: rgba(255,71,87,.13); color: var(--red); border: 1px solid rgba(255,71,87,.22); }
+.badge-green { background: rgba(46,213,115,.12); color: var(--green); border: 1px solid rgba(46,213,115,.22); }
+.badge-gray { background: rgba(255,255,255,.06); color: var(--text-dim); border: 1px solid var(--border); }
 
 .highlight { background: rgba(108,99,255,.35); border-radius: 3px; padding: 0 2px; color: #fff; }
 
-.no-results {
-  text-align: center;
-  padding: 60px 20px;
-  color: var(--text-dim);
-}
-.no-results .big { font-size: 3rem; margin-bottom: 12px; }
+.no-results { text-align: center; padding: 60px 20px; color: var(--text-dim); }
+.no-results .big { font-size: 2.4rem; margin-bottom: 12px; }
+.no-results p { margin: 4px 0; }
 
-/* Light Theme */
-body.light { --bg: #f5f6fa; --card: #fff; --card-hover: #f8f9ff; --text: #2c3e50; --text-dim: #95a5a6; --border: rgba(0,0,0,.08); --glow: rgba(108,99,255,.08); }
-body.light .sticky-header { background: rgba(245,246,250,.9); }
-body.light .search-box { background: rgba(0,0,0,.04); color: #2c3e50; }
-body.light .highlight { background: rgba(108,99,255,.2); color: #2c3e50; }
-
-/* Progress bar */
-.progress-bar {
-  position: fixed;
-  top: 0; left: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--accent), var(--accent2));
-  z-index: 200;
-  transition: width .3s;
-  border-radius: 0 3px 3px 0;
-}
-
-/* Scroll to top */
-.scroll-top {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  width: 44px; height: 44px;
-  border-radius: 50%;
+.error-box { text-align: center; padding: 50px 20px; }
+.error-box .err-icon { font-size: 2.4rem; margin-bottom: 12px; }
+.error-box p { color: var(--text-dim); margin: 6px 0; }
+.file-btn {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 10px 20px;
+  border-radius: 12px;
   background: linear-gradient(135deg, var(--accent), var(--accent2));
   color: #fff;
-  border: none;
-  font-size: 1.2rem;
+  font-size: .85rem;
   cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: .3s;
-  z-index: 90;
-  box-shadow: 0 4px 15px rgba(108,99,255,.3);
+  border: none;
 }
-.scroll-top.show { opacity: 1; transform: translateY(0); }
-.scroll-top:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(108,99,255,.4); }
+#fileInput { display: none; }
 
-@media(max-width:600px) {
-  .sticky-header { padding: 12px 14px 10px; }
-  .logo { font-size: 1.2rem; }
-  .stat-pill { padding: 4px 10px; font-size: .76rem; }
+/* 进度条加载 */
+#progressBar { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width .4s; z-index: 999; }
+
+.scroll-top {
+  position: fixed; bottom: 24px; right: 24px;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 1.1rem;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: .3s;
+  box-shadow: 0 6px 24px rgba(0,0,0,.4);
+}
+.scroll-top.show { opacity: 1; pointer-events: auto; }
+.scroll-top:hover { border-color: var(--accent); }
+
+@media (max-width: 720px) {
+  .card-grid { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 1.3rem; }
+  .container { padding: 14px 14px 50px; }
 }
 </style>
 </head>
 <body>
-<div class="progress-bar" id="progressBar" style="width:0%"></div>
+<div id="progressBar"></div>
 
-<div class="sticky-header">
-  <div class="header-inner">
-    <div class="top-row">
-      <span class="logo">⚡ 课程系列总览</span>
-      <button class="theme-toggle" id="themeBtn" title="切换主题">🌙</button>
+<div class="container">
+  <header class="hero">
+    <div>
+      <h1>⚡ 课程系列总览</h1>
+      <div class="sub">微师 · 老师课程可购买状态监控</div>
     </div>
-    <div class="stats-bar" id="statsBar"></div>
-    <div class="search-row">
-      <div class="search-wrap">
-        <span class="icon">🔍</span>
-        <input type="text" class="search-box" id="searchBox" placeholder="搜索系列名…" autocomplete="off">
-      </div>
-      <span class="search-count" id="searchCount"></span>
+    <div class="checktime" id="checkTime">⏳ 数据加载中…</div>
+  </header>
+
+  <div class="stats-bar" id="statsBar"></div>
+
+  <div class="controls">
+    <div class="search-wrap">
+      <span class="ico">🔍</span>
+      <input type="text" id="searchInput" placeholder="搜索系列名…" autocomplete="off">
     </div>
-    <div class="filter-row" id="filterRow">
+    <div class="chips" id="chips">
       <button class="chip active" data-filter="all">全部</button>
       <button class="chip" data-filter="normal">正常</button>
       <button class="chip" data-filter="offline">下架</button>
       <button class="chip" data-filter="purchased">已购买</button>
       <button class="chip" data-filter="cansell">有可单买</button>
     </div>
+    <span id="searchCount"></span>
   </div>
-</div>
 
-<div class="container" id="mainContainer">
-  <div class="loading" id="loadingEl">
-    <div class="loader"></div>
-    <p>正在加载数据…</p>
-  </div>
+  <main id="mainContainer"></main>
 </div>
 
 <button class="scroll-top" id="scrollTopBtn" title="回到顶部">↑</button>
@@ -380,6 +280,7 @@ const CSV_URL = 'https://zhzx2026.github.io/weishi-scan/data/courses/courses_dat
 const CHECK_URL = 'https://zhzx2026.github.io/weishi-scan/data/courses/last_check.json';
 let allSeries = [];
 let currentFilter = 'all';
+let lastCheck = '';
 
 /* ── CSV Parsing ── */
 function parseCSV(text) {
@@ -403,60 +304,57 @@ function parseCSV(text) {
   const headers = splitLine(lines[0]);
   const rows = [];
   for (let i = 1; i < lines.length; i++) {
-    const vals = splitLine(lines[i]);
-    if (vals.length < 2) continue;
+    const cells = splitLine(lines[i]);
+    if (cells.length < 2) continue;
     const obj = {};
-    headers.forEach((h, idx) => obj[h.trim()] = (vals[idx]||'').trim());
+    headers.forEach((h, idx) => obj[h] = (cells[idx] || '').trim());
     rows.push(obj);
   }
   return rows;
 }
 
 function splitLine(line) {
-  const r = []; let cur = '', inQ = false;
+  const out = [];
+  let cur = '', inQ = false;
   for (let i = 0; i < line.length; i++) {
     const ch = line[i];
     if (inQ) {
-      if (ch === '"') { if (line[i+1]==='"'){cur+='"';i++;}else inQ=false; }
+      if (ch === '"') { if (line[i+1] === '"') { cur += '"'; i++; } else inQ = false; }
       else cur += ch;
     } else {
       if (ch === '"') inQ = true;
-      else if (ch === ',') { r.push(cur); cur = ''; }
+      else if (ch === ',') { out.push(cur); cur = ''; }
       else cur += ch;
     }
   }
-  r.push(cur);
-  return r;
+  out.push(cur);
+  return out;
 }
 
-/* ── Data Processing ── */
 function processData(rows) {
   const map = {};
   rows.forEach(r => {
-    const sid = r.series_id || 'unknown';
-    if (!map[sid]) map[sid] = { series_id: sid, series_name: r.series_name||'未知系列', series_status: r.series_status||'', courses: [] };
+    const sid = r.series_id || '';
+    if (!sid) return;
+    if (!map[sid]) map[sid] = { series_id: sid, series_name: r.series_name || '', series_status: r.series_status || '', courses: [] };
     map[sid].courses.push({
-      course_id: r.course_id, course_name: r.course_name||'', course_url: r.course_url||'',
-      class_name: r.class_name||'', price: r.price||'', start_time: r.start_time||'',
-      learn_cnt: parseInt(r.learn_cnt)||0, can_sell_alone: r.can_sell_alone||'', purchase_status: r.purchase_status||''
+      course_id: r.course_id || '', course_name: r.course_name || '',
+      start_time: r.start_time || '', learn_cnt: parseInt(r.learn_cnt)||0,
+      can_sell_alone: r.can_sell_alone||'', purchase_status: r.purchase_status||''
     });
   });
   const list = Object.values(map);
   list.forEach(s => {
     s.courses.sort((a,b) => (a.start_time||'').localeCompare(b.start_time||''));
     s.latestTime = '';
-    s.hasCanSell = false;
-    s.soloCount = 0;
-    s.boughtCount = 0;
-    s.canBuyCount = 0;
-    s.totalCount = s.courses.length;
     for (let i = s.courses.length-1; i >= 0; i--) {
       if (s.courses[i].start_time && !s.latestTime) s.latestTime = s.courses[i].start_time;
     }
+    s.boughtCount = 0; s.canBuyCount = 0; s.hasCanSell = false; s.totalCount = s.courses.length;
     s.courses.forEach(c => {
-      if (c.purchase_status === '已购买') { s.boughtCount++; }
-      if (c.can_sell_alone === '是') { s.hasCanSell = true; s.soloCount++; }
-      if (c.purchase_status === '可单独购买') { s.canBuyCount++; }
+      if (c.purchase_status === '已购买') s.boughtCount++;
+      if (c.purchase_status === '可单独购买') s.canBuyCount++;
+      if (c.can_sell_alone === '是') s.hasCanSell = true;
     });
   });
   list.sort((a,b) => (b.latestTime||'').localeCompare(a.latestTime||''));
@@ -465,24 +363,25 @@ function processData(rows) {
 
 /* ── Stats ── */
 function updateStats(series) {
-  let cs=0, off=0, purchased=0, soloSeries=0;
+  let cs=0, off=0, purchased=0, soloSeries=0, boughtAll=0, canBuyAll=0;
   series.forEach(s => {
     if (s.series_status==='下架') off++;
     if (s.series_status==='已购买') purchased++;
     if (s.hasCanSell) soloSeries++;
-    cs += s.soloCount || 0;
+    cs += s.canBuyCount || 0;
+    boughtAll += s.boughtCount || 0;
+    canBuyAll += s.canBuyCount || 0;
   });
   document.getElementById('statsBar').innerHTML =
-    pill('📦',series.length,'个系列') +
-    pill('🛒',cs,'门可单买') +
-    pill('✨',soloSeries,'个系列有可单买') +
-    pill('🔻',off,'系列下架') +
-    pill('✅',purchased,'已购买') +
+    pill('📦', series.length, '个系列') +
+    pill('🛒', cs, '门可单买', 'hl-blue') +
+    pill('✅', purchased, '已购系列', 'hl-green') +
+    pill('🔻', off, '系列下架', 'hl-red') +
+    pill('💰', boughtAll, '课已购买', 'hl-green') +
     (lastCheck ? `<span class="stat-pill">🕐 最后检查 <span class="num">${lastCheck}</span>（北京时间）</span>` : '');
 }
-let lastCheck = '';
-function pill(icon,num,label) {
-  return `<span class="stat-pill">${icon} <span class="num">${num}</span> ${label}</span>`;
+function pill(icon,num,label,hl) {
+  return `<span class="stat-pill ${hl||''}">${icon} <span class="num">${num}</span> ${label}</span>`;
 }
 
 /* ── Helpers ── */
@@ -492,18 +391,30 @@ function hl(text, q) {
   const e = esc(text), qe = q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
   return e.replace(new RegExp(qe,'gi'), m => `<span class="highlight">${m}</span>`);
 }
-function shortDate(dt) { const m=dt.match(/^(\d{4}-\d{2}-\d{2})/); return m?m[1]:dt; }
 function statusBadge(st) {
   if (st==='下架') return '<span class="badge badge-red">⛔ 下架</span>';
   if (st==='已购买') return '<span class="badge badge-gray">✅ 已购买</span>';
   if (st==='正常') return '<span class="badge badge-green">🟢 正常</span>';
   return `<span class="badge badge-gray">${esc(st)}</span>`;
 }
-
-/* 系列购买统计 [已购a/可买b/总数c] */
 function soloStat(s) {
   const a = s.boughtCount || 0, b = s.canBuyCount || 0, y = s.totalCount || 0;
   return `<span class="solo-stat ${b>0?'solo-ok':'solo-none'}">[${a}/${b}/${y}]</span>`;
+}
+function courseBadge(st) {
+  if (st === '已购买') return '<span class="cbadge c-bought">已购买</span>';
+  if (st === '可单独购买') return '<span class="cbadge c-solo">可单独购买</span>';
+  if (st === '免费') return '<span class="cbadge c-free">免费</span>';
+  if (st === '不能单独购买(需随系列)') return '<span class="cbadge c-nosolo">随系列</span>';
+  return `<span class="cbadge c-other">${esc(st)}</span>`;
+}
+function barHTML(s) {
+  const a = s.boughtCount||0, b = s.canBuyCount||0, y = s.totalCount||1;
+  const pw = Math.round(a/y*100), cw = Math.round(b/y*100);
+  return `<div class="bar-wrap">
+    <div class="bar"><span class="seg-bought" style="width:${pw}%"></span><span class="seg-canbuy" style="width:${cw}%"></span></div>
+    <div class="bar-labels"><span class="lb">已购 <b>${a}</b></span><span class="lc">可买 <b>${b}</b></span><span>共 <b>${y}</b></span></div>
+  </div>`;
 }
 
 /* ── Filtering ── */
@@ -526,12 +437,7 @@ function render(seriesList, query) {
   let filtered = applyFilter(seriesList, currentFilter);
 
   if (q) {
-    const result = [];
-    filtered.forEach(s => {
-      const sm = s.series_name.toLowerCase().includes(q);
-      if (sm) result.push(s);
-    });
-    filtered = result;
+    filtered = filtered.filter(s => s.series_name.toLowerCase().includes(q));
   }
 
   const total = applyFilter(seriesList, currentFilter).length;
@@ -542,43 +448,39 @@ function render(seriesList, query) {
     return;
   }
 
-  let html = '';
-
+  let html = '<div class="card-grid">';
   filtered.forEach((s, idx) => {
     const sid = s.series_id;
     const url = `https://m.weishi100.com/mweb/series/?id=${encodeURIComponent(sid)}`;
 
-    html += `<div class="series-row" style="animation-delay:${Math.min(idx*0.04,0.6)}s">`;
-    html += `<span class="arrow" onclick="toggleExpand(this)">▸</span>`;
-    html += `<a class="series-name" href="${esc(url)}" target="_blank" rel="noopener">${hl(s.series_name,q)}</a>`;
+    html += `<div class="series-card" data-sid="${esc(sid)}" style="animation-delay:${Math.min(idx*0.03,0.6)}s">`;
+    html += `<div class="card-head">`;
+    html += `<span class="arrow">▸</span>`;
+    html += `<a class="card-title" href="${esc(url)}" target="_blank" rel="noopener">${hl(s.series_name,q)}</a>`;
     html += statusBadge(s.series_status);
-    html += `<span class="solo-stat">${soloStat(s)}</span>`;
+    html += `</div>`;
+    html += `<div class="card-sub">${soloStat(s)}<span class="card-count">${s.totalCount} 门课</span></div>`;
+    html += barHTML(s);
     html += `<div class="series-detail" style="display:none">`;
     s.courses.forEach(c => {
       const cu = `https://m.weishi100.com/mweb/single/1/?id=${c.course_id}`;
-      const badge = courseBadge(c.purchase_status);
-      html += `<div class="course-row"><a class="course-name ${c.purchase_status==='不能单独购买(需随系列)'?'down':''}" href="${esc(cu)}" target="_blank" rel="noopener">${esc(c.course_name)}</a>${badge}</div>`;
+      html += `<div class="course-row"><a class="course-name ${c.purchase_status==='不能单独购买(需随系列)'?'down':''}" href="${esc(cu)}" target="_blank" rel="noopener">${esc(c.course_name)}</a>${courseBadge(c.purchase_status)}</div>`;
     });
     html += `</div>`;
     html += `</div>`;
   });
+  html += '</div>';
 
   container.innerHTML = html;
-}
 
-function toggleExpand(arrow) {
-  const detail = arrow.parentElement.querySelector('.series-detail');
-  const isOpen = detail.style.display !== 'none';
-  detail.style.display = isOpen ? 'none' : 'block';
-  arrow.textContent = isOpen ? '▸' : '▾';
-}
-
-function courseBadge(st) {
-  if (st === '已购买') return '<span class="cbadge c-bought">已购买</span>';
-  if (st === '可单独购买') return '<span class="cbadge c-solo">可单独购买</span>';
-  if (st === '免费') return '<span class="cbadge c-free">免费</span>';
-  if (st === '不能单独购买(需随系列)') return '<span class="cbadge c-nosolo">随系列</span>';
-  return `<span class="cbadge c-other">${esc(st)}</span>`;
+  container.querySelectorAll('.series-card').forEach(card => {
+    card.addEventListener('click', e => {
+      if (e.target.closest('a')) return;
+      card.classList.toggle('expanded');
+      const d = card.querySelector('.series-detail');
+      d.style.display = d.style.display === 'none' ? 'block' : 'none';
+    });
+  });
 }
 
 /* ── Error / File fallback ── */
@@ -606,48 +508,30 @@ function loadFromText(text) {
   if (!rows.length) { showError('CSV 解析失败或无数据'); return; }
   allSeries = processData(rows);
   updateStats(allSeries);
-  render(allSeries, '');
+  render(allSeries, document.getElementById('searchInput').value);
 }
 
-/* ── Search ── */
-let searchTimer;
-document.getElementById('searchBox').addEventListener('input', function() {
-  clearTimeout(searchTimer);
-  const v = this.value;
-  searchTimer = setTimeout(() => { if (allSeries.length) render(allSeries, v); }, 150);
+/* ── Init ── */
+const searchInput = document.getElementById('searchInput');
+let debounceTimer;
+searchInput.addEventListener('input', () => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => render(allSeries, searchInput.value), 200);
 });
 
-/* ── Filter Chips ── */
-document.getElementById('filterRow').addEventListener('click', function(e) {
-  const chip = e.target.closest('.chip');
-  if (!chip) return;
-  currentFilter = chip.dataset.filter;
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-  chip.classList.add('active');
-  render(allSeries, document.getElementById('searchBox').value);
+document.querySelectorAll('#chips .chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('#chips .chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    currentFilter = chip.dataset.filter;
+    render(allSeries, searchInput.value);
+  });
 });
 
-/* ── Theme Toggle ── */
-const themeBtn = document.getElementById('themeBtn');
-let darkMode = true;
-themeBtn.addEventListener('click', () => {
-  darkMode = !darkMode;
-  document.body.classList.toggle('light', !darkMode);
-  themeBtn.textContent = darkMode ? '🌙' : '☀️';
-});
-
-/* ── Scroll to Top ── */
 const stb = document.getElementById('scrollTopBtn');
-window.addEventListener('scroll', () => {
-  stb.classList.toggle('show', window.scrollY > 400);
-  // progress bar
-  const h = document.documentElement.scrollHeight - window.innerHeight;
-  const pct = h > 0 ? (window.scrollY / h * 100) : 0;
-  document.getElementById('progressBar').style.width = pct + '%';
-});
+window.addEventListener('scroll', () => stb.classList.toggle('show', window.scrollY > 400));
 stb.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
-/* ── Init ── */
 (async () => {
   const pb = document.getElementById('progressBar');
   pb.style.width = '30%';
@@ -662,7 +546,11 @@ stb.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth'
       const cr = await fetch(CHECK_URL);
       if (cr.ok) {
         const j = await cr.json();
-        if (j.checked_at) { lastCheck = j.checked_at; renderStats(); }
+        if (j.checked_at) {
+          lastCheck = j.checked_at;
+          document.getElementById('checkTime').textContent = `🕐 最后检查 ${lastCheck}（北京时间）`;
+          updateStats(allSeries);
+        }
       }
     } catch (e) { /* 检查时间加载失败不影响主体 */ }
     pb.style.width = '100%';
