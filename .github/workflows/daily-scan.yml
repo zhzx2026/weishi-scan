@@ -19,7 +19,7 @@ jobs:
         run: python3 scripts/daily_scan.py
 
       - name: 邮件汇报老师新课
-        if: hashFiles('new_teacher.json') != ''
+        if: hashFiles('new_teacher.json') != '' || hashFiles('delisted_new.json') != ''
         env:
           MAIL_API_KEY: ${{ secrets.MAIL_API_KEY }}
           MAIL_TO: ${{ secrets.MAIL_TO }}
@@ -39,6 +39,7 @@ jobs:
         run: |
           git config user.name "zhzx2026"
           git config user.email "zhzx2026@users.noreply.github.com"
-          git add data/baseline.json data/reported.json data/courses/all_courses_new.csv
+          git add data/baseline.json data/reported.json data/courses/all_courses_new.csv \
+            data/delisted.json data/courses/teacher_courses.csv data/courses/last_check.json
           git diff --cached --quiet || git commit -m "update baseline"
           git push

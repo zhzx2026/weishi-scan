@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """每日增量扫描: 检查 [基线+1, 基线+window] 区间的单课/系列, 收集指定老师(classId)的新课
-+ 检测老师已有系列的上下架状态(数据写入 delisted_new.json, 由 send_report 发邮件)"""
++ 检测老师已有系列的上下架状态(数据写入 delisted_new.json, 由 send_report 发邮件)
++ 结束时写入 data/courses/last_check.json 记录检查时间(北京时间), HTML 展示"""
 import csv
+import datetime
 import json
 import os
 import urllib.request
@@ -140,6 +142,12 @@ def main():
     print(f"扫描完成: 有效响应 {n_ok}, 401 x {n_401}, 老师新课 {len(new_teacher)} 门, 全部新课 {len(new_all)} 门")
     for t in new_teacher:
         print("  ", t["course_id"], t["name"])
+    os.makedirs("data/courses", exist_ok=True)
+    with open("data/courses/last_check.json", "w", encoding="utf-8") as f:
+        json.dump({
+            "checked_at": datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M"),
+            "tz": "北京时间",
+        }, f, ensure_ascii=False, indent=2)
 
 
 if __name__ == "__main__":

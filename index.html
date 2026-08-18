@@ -329,6 +329,7 @@ body.light .highlight { background: rgba(108,99,255,.2); color: #2c3e50; }
 
 <script>
 const CSV_URL = 'https://zhzx2026.github.io/weishi-scan/data/courses/courses_data.csv';
+const CHECK_URL = 'https://zhzx2026.github.io/weishi-scan/data/courses/last_check.json';
 let allSeries = [];
 let currentFilter = 'all';
 
@@ -412,9 +413,7 @@ function processData(rows) {
 
 /* ── Stats ── */
 function updateStats(series) {
-  let tc=0, cs=0, off=0, purchased=0, soloSeries=0;
   series.forEach(s => {
-    tc += s.courses.length;
     if (s.series_status==='下架') off++;
     if (s.series_status==='已购买') purchased++;
     if (s.hasCanSell) soloSeries++;
@@ -425,8 +424,10 @@ function updateStats(series) {
     pill('🛒',cs,'门可单买') +
     pill('✨',soloSeries,'个系列有可单买') +
     pill('🔻',off,'系列下架') +
-    pill('✅',purchased,'已购买');
+    pill('✅',purchased,'已购买') +
+    (lastCheck ? `<span class="stat-pill">🕐 最后检查 <span class="num">${lastCheck}</span>（北京时间）</span>` : '');
 }
+let lastCheck = '';
 function pill(icon,num,label) {
   return `<span class="stat-pill">${icon} <span class="num">${num}</span> ${label}</span>`;
 }
@@ -581,6 +582,13 @@ stb.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth'
     const text = await resp.text();
     pb.style.width = '90%';
     loadFromText(text);
+    try {
+      const cr = await fetch(CHECK_URL);
+      if (cr.ok) {
+        const j = await cr.json();
+        if (j.checked_at) { lastCheck = j.checked_at; renderStats(); }
+      }
+    } catch (e) { /* 检查时间加载失败不影响主体 */ }
     pb.style.width = '100%';
     setTimeout(() => pb.style.opacity = '0', 500);
   } catch (err) {

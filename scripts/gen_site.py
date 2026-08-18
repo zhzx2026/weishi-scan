@@ -181,6 +181,9 @@ print(f"courses_data.csv: {len(rows)} 行")
 
 json.dump(series_status, open("data/courses/series_status.json", "w", encoding="utf-8"), ensure_ascii=False, indent=2)
 json.dump(solo, open("data/courses/can_sell_alone.json", "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+json.dump({"checked_at": datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8))).strftime("%Y-%m-%d %H:%M"),
+           "tz": "北京时间"},
+          open("data/courses/last_check.json", "w", encoding="utf-8"), ensure_ascii=False, indent=2)
 
 
 # 6. 生成 HTML
