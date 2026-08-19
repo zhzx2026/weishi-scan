@@ -27,12 +27,30 @@ def save_reported(ids):
 
 def send(subject, html):
     body = json.dumps({"to": TO, "subject": subject, "html": html}).encode("utf-8")
-    req = urllib.request.Request(API, data=body, headers={
+    headers = {
         "Authorization": "Bearer " + KEY,
         "Content-Type": "application/json",
-    })
-    with urllib.request.urlopen(req, timeout=30) as r:
-        print("邮件已发送:", r.read().decode("utf-8", "replace"))
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+    }
+    last = None
+    for attempt in range(3):
+        try:
+            req = urllib.request.Request(API, data=body, headers=headers)
+            with urllib.request.urlopen(req, timeout=30) as r:
+                print("邮件已发送:", r.read().decode("utf-8", "replace"))
+                return
+        except urllib.error.HTTPError as e:
+            last = f"HTTP {e.code}"
+            print(f"发送失败 {e.code}, 重试 {attempt+1}/3")
+            import time
+            time.sleep(5)
+        except Exception as e:
+            last = str(e)
+            import time
+            time.sleep(5)
+    raise RuntimeError(f"邮件发送失败: {last}")
 
 
 def main():
